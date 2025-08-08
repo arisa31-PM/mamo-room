@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>| クイズ |　めざせ！こうつうあんぜんキッズ</title>
+    <meta name="description" content="幼児〜小学生向け交通安全教材。道路標識やルールをクイズやイラストで楽しく学べる学習サイトです。">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+1:wght@400;700&family=Yomogi&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="quiz-page">
+
+    <main>
+        <section id="quiz" class="wrapper">
+            <h2 class="section-title">クイズにちょうせん！</h2>
+            <div class="quiz-box">
+                <h3 class="quiz-number"></h3>
+                <p class="quiz-question">
+                    みちを　わたるときは　なにをしてから　わたる？
+                </p>
+                <div class="quiz-options">
+                    <button class="quiz-option" data-correct="false">ともだちと　おしゃべりをしながら　わたる</button>
+                    <button class="quiz-option" data-correct="true">みぎ・ひだり・まえ・うしろをかくにんする</button>
+                </div>
+
+                <div class="quiz-remaining"></div>
+            </div>
+            <div class="btn-area">
+                <a href="index.html#top"><img class="mascot" src="img/tobimaru-back.png" alt="とびまる"></a>
+            </div>
+        </section>
+    </main>
+
+    <!-- クイズのオーバーレイ -->
+    <div id="result-overlay" class="hidden">
+        <img id="result-image" src="" alt="判定結果">
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

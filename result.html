@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>| けっか |　めざせ！こうつうあんぜんキッズ</title>
+    <meta name="description" content="幼児〜小学生向け交通安全教材。道路標識やルールをクイズやイラストで楽しく学べる学習サイトです。">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+1:wght@400;700&family=Yomogi&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="result-page">
+
+    <main>
+        <section id="result" class="wrapper">
+            <h2 class="section-title">けっかはっぴょう</h2>
+            <div class="result-box">
+                <div class="frame-box">
+                    <p class="score-text">せいかいすう：<span class="red"><span id="score"></span></span>/ 10</p>
+                    <p id="message" class="message"></p>
+                </div>
+                <div class="btn-area">
+                    <a class="click-btn back-btn" href="index.html">トップへもどる</a>
+                    <a class="click-btn retry-btn" href="quiz1.html" id="restartQuiz">もういちど ちょうせん！</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

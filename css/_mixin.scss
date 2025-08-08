@@ -1,0 +1,24 @@
+$breakpoint-pc: 1025px;
+$breakpoint-tab: 768px;
+$breakpoint-sp: 767px;
+
+// PC（1025px以上）
+@mixin pc {
+  @media screen and (min-width: $breakpoint-pc) {
+    @content;
+  }
+}
+
+// タブレット〜スマホ（1024px以下）
+@mixin tab-sp {
+  @media screen and (max-width: 1024px) {
+    @content;
+  }
+}
+
+// スマホのみ（767px以下）
+@mixin sp {
+  @media screen and (max-width: $breakpoint-sp) {
+    @content;
+  }
+}
