@@ -1,47 +1,92 @@
 $(function () {
-  const path = location.pathname;
-
   // ===============================
   // loading.html（loadingページのときだけ実行）
   // ===============================
-    if ($('body').hasClass('loading-page')) {
-    const BASE_DIR = location.pathname.replace(/[^/]*$/, '');
-    const NEXT_URL = BASE_DIR + 'index.html';
-    const SEEN_KEY = 'loading_seen_v3';
+  if (!$('body').hasClass('loading-page')) return; 
 
-    const $video = $('#loadingVideo');
-    const $msg   = $('.msg-box');
-    const $fade  = $('.fade-layer');
-    const v = $video.get(0);
+  // GitHub Pagesでも安全に index.html を指す
+  const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); 
+  const NEXT_URL = BASE_DIR + 'index.html';
+
+  // 既視認スキップ用キー（バージョン付きで衝突回避）
+  const SEEN_KEY = 'loading_seen_v3';
+
+  // 要素
+  const $video = $('#loadingVideo');
+  const $msg   = $('.msg-box');
+  const $fade  = $('.fade-layer');
+  const v = $video.get(0);
+
+  // 既視認なら履歴を汚さず即遷移
+  try {
+    if (sessionStorage.getItem(SEEN_KEY) === '1' || localStorage.getItem(SEEN_KEY) === '1') {
+      location.replace(NEXT_URL);
+      return;
+    }
+  } catch (e) {
+    // storage不可でも続行
+    console.warn('storage unavailable:', e);
+  }
+
+  let started = false;
+  let showTimer = null; // 5秒後にメッセージ表示
+  let jumpTimer = null; // 10秒後に強制遷移
+
+  function startSequence() {
+    if (started) return;
+    started = true;
+
+    // 5秒後にメッセージ表示
+    showTimer = setTimeout(() => {
+      $msg.attr('aria-hidden', 'false').addClass('show');
+    }, 5000);
+
+    // 10秒後にフォールバック遷移（動画が終わらなくても進む）
+    jumpTimer = setTimeout(goNext, 10000);
+  }
+
+  function goNext() {
+    clearTimeout(showTimer);
+    clearTimeout(jumpTimer);
+
+    $fade.addClass('show');
 
     try {
-      if (sessionStorage.getItem(SEEN_KEY) === '1' || localStorage.getItem(SEEN_KEY) === '1') {
-        location.replace(NEXT_URL);
-        return;
-      }
+      sessionStorage.setItem(SEEN_KEY, '1');
+      localStorage.setItem(SEEN_KEY, '1');
     } catch (e) {}
 
-    let started = false, showTimer = null, jumpTimer = null;
-
-    function startSequence() {
-      if (started) return;
-      started = true;
-      showTimer = setTimeout(() => { $msg.attr('aria-hidden', 'false').addClass('show'); }, 5000);
-      jumpTimer = setTimeout(goNext, 10000);
-    }
-    function goNext() {
-      clearTimeout(showTimer); clearTimeout(jumpTimer);
-      $fade.addClass('show');
-      try { sessionStorage.setItem(SEEN_KEY,'1'); localStorage.setItem(SEEN_KEY,'1'); } catch(e){}
-      setTimeout(() => { location.replace(NEXT_URL); }, 300);
-    }
-
-    $video.on('canplaythrough', () => { v.play().catch(() => {}); startSequence(); });
-    $video.on('error', startSequence);
-    $video.on('ended', goNext);
-    setTimeout(startSequence, 3000);
-    $('#skipLoading').on('click', (e) => { e.preventDefault(); goNext(); });
+    // 少し待ってから置き換え遷移（履歴を残さない）
+    setTimeout(() => {
+      location.replace(NEXT_URL);
+    }, 300);
   }
+
+  // ===== 動画イベント =====
+  // 読み込み完了で再生を試みつつシーケンス開始（失敗してもOK）
+  $video.on('canplaythrough', () => {
+    v.play().catch(() => {});
+    startSequence();
+  });
+
+  // エラーでも必ず開始
+  $video.on('error', () => {
+    console.warn('video error, fallback start');
+    startSequence();
+  });
+
+  // 再生が最後まで行ったら遷移
+  $video.on('ended', goNext);
+
+  // 3秒経っても canplaythrough が来なければ保険で開始
+  setTimeout(startSequence, 3000);
+
+  // 手動スキップ（ボタンを置く場合）
+  // <button id="skipLoading">とばす</button>
+  $('#skipLoading').on('click', function (e) {
+    e.preventDefault();
+    goNext();
+  });
 
   // ===============================
   // index.html（トップ）
