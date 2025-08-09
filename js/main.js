@@ -1,102 +1,47 @@
-// main.js
 $(function () {
   const path = location.pathname;
 
   // ===============================
   // loading.html（loadingページのときだけ実行）
   // ===============================
-  // ここは loading.html だけで動かす
-  if (!$('body').hasClass('loading-page')) return;
+    if ($('body').hasClass('loading-page')) {
+    const BASE_DIR = location.pathname.replace(/[^/]*$/, '');
+    const NEXT_URL = BASE_DIR + 'index.html';
+    const SEEN_KEY = 'loading_seen_v3';
 
-  // ===== パスの安全な作り方（GitHub Pages対応） =====
-  // 現在のパスの末尾(ファイル名)を消して、同階層の index.html を指す
-  const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); // 例: /repo/dir/ → /repo/dir/
-  const NEXT_URL = BASE_DIR + 'index.html';
+    const $video = $('#loadingVideo');
+    const $msg   = $('.msg-box');
+    const $fade  = $('.fade-layer');
+    const v = $video.get(0);
 
-  // バージョンつきキー（前のキーが残っていても誤作動しない）
-  const SEEN_KEY = 'loading_seen_v3';
-
-  // ===== 要素 =====
-  const $video = $('#loadingVideo');
-  const $msg   = $('.msg-box');
-  const $fade  = $('.fade-layer');
-  const v = $video.get(0);
-
-  // ===== 既視認スキップ（履歴を汚さない） =====
-  try {
-    if (sessionStorage.getItem(SEEN_KEY) === '1' || localStorage.getItem(SEEN_KEY) === '1') {
-      // loading.html を開いても即 index.html へ
-      location.replace(NEXT_URL);
-      return;
-    }
-  } catch (e) {
-    // storage 不可でも無視して続行
-    console.warn('storage unavailable:', e);
-  }
-
-  let started   = false;
-  let showTimer = null;  // 5秒後にメッセージ表示
-  let jumpTimer = null;  // 10秒後にジャンプ
-
-  // ===== フォールバック：動画が読めなくても必ず進む =====
-  function startSequence() {
-    if (started) return;
-    started = true;
-
-    // 5秒後にメッセージ
-    showTimer = setTimeout(() => {
-      $msg.attr('aria-hidden', 'false').addClass('show');
-    }, 5000);
-
-    // 10秒後に遷移（動画終端イベントが来なくても進む）
-    jumpTimer = setTimeout(() => {
-      goNext();
-    }, 10000);
-  }
-
-  function goNext() {
-    clearTimeout(showTimer);
-    clearTimeout(jumpTimer);
-
-    $fade.addClass('show');
     try {
-      sessionStorage.setItem(SEEN_KEY, '1');
-      localStorage.setItem(SEEN_KEY, '1');
+      if (sessionStorage.getItem(SEEN_KEY) === '1' || localStorage.getItem(SEEN_KEY) === '1') {
+        location.replace(NEXT_URL);
+        return;
+      }
     } catch (e) {}
 
-    // 300ms だけフェードを待ってから遷移
-    setTimeout(() => {
-      // replace にして履歴を汚さない
-      location.replace(NEXT_URL);
-    }, 300);
+    let started = false, showTimer = null, jumpTimer = null;
+
+    function startSequence() {
+      if (started) return;
+      started = true;
+      showTimer = setTimeout(() => { $msg.attr('aria-hidden', 'false').addClass('show'); }, 5000);
+      jumpTimer = setTimeout(goNext, 10000);
+    }
+    function goNext() {
+      clearTimeout(showTimer); clearTimeout(jumpTimer);
+      $fade.addClass('show');
+      try { sessionStorage.setItem(SEEN_KEY,'1'); localStorage.setItem(SEEN_KEY,'1'); } catch(e){}
+      setTimeout(() => { location.replace(NEXT_URL); }, 300);
+    }
+
+    $video.on('canplaythrough', () => { v.play().catch(() => {}); startSequence(); });
+    $video.on('error', startSequence);
+    $video.on('ended', goNext);
+    setTimeout(startSequence, 3000);
+    $('#skipLoading').on('click', (e) => { e.preventDefault(); goNext(); });
   }
-
-  // ===== 動画イベント =====
-  // iOSなど自動再生が無効でも sequence は必ず開始
-  $video.on('canplaythrough', () => {
-    // 再生を試みる（失敗してもOK）
-    v.play().catch(() => {});
-    startSequence();
-  });
-
-  $video.on('error', () => {
-    console.warn('video error, fallback start');
-    startSequence();
-  });
-
-  $video.on('ended', () => {
-    goNext();
-  });
-
-  // 保険：DOM読み込み後3秒で始まらなかったら開始
-  setTimeout(startSequence, 3000);
-
-  // ===== 手動スキップ（任意で置く） =====
-  // 例: <button id="skipLoading">とばす</button>
-  $('#skipLoading').on('click', function (e) {
-    e.preventDefault();
-    goNext();
-  });
 
   // ===============================
   // index.html（トップ）
