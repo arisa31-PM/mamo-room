@@ -1,9 +1,8 @@
 $(function () {
-  if (!$('body').hasClass('loading-page')) return; 
-
   // ===============================
   // loading.html（loadingページのときだけ実行）
   // ===============================
+  if (!$('body').hasClass('loading-page')) return; 
 
   // GitHub Pagesでも安全に index.html を指す
   const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); 
