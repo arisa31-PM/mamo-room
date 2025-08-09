@@ -363,6 +363,88 @@ span {
 }
 
 //                            //
+//      loading.html          //
+//                            //
+//                            //
+//                            //
+.loading-page {
+  /* ① 色トークン（あとで微調整しやすい） */
+  --warm-tint: hsla(32, 70%, 72%, .28);   /* 画面全体の暖色フィルター */
+  --ivory:     hsl(42 100% 97%);          /* 白フェードをアイボリーに */
+  --panel-bg:  hsla(28, 35%, 12%, .55);   /* メッセージ面の半透明ブラウン */
+  --panel-bd:  hsla(38, 90%, 88%, .7);    /* 白より柔らかいアイボリー枠線 */
+  --text-warm: hsl(45 100% 98%);          /* 真っ白より少し温かい文字色 */
+
+  .video-wrap { 
+    position: fixed; inset: 0;
+    /* ② 画面全体に暖色フィルター＋わずかなビネット（優しい陰影） */
+    &::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(120% 85% at 50% 70%, transparent 55%, rgba(0,0,0,.12) 85%),
+        var(--warm-tint);
+      z-index: 1;           /* video の上、msg-box の下 */
+      pointer-events:none;
+      transition: opacity .8s ease;
+      opacity: 1;           /* まずは常時ON。強すぎる時は .85～.9 に */
+    }
+  }
+
+  #loadingVideo{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover; background:#000; display:block;
+    transition:opacity .8s ease;
+    z-index:1;
+  }
+  #loadingVideo.is-dim{ opacity:.7; } /* 少しだけ明るさを落とす */
+
+  .msg-box{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%, -50%) scale(.98);
+    max-width:min(92vw, 900px);
+    box-sizing:border-box;
+    padding:clamp(16px, 4vw, 32px) clamp(20px, 5vw, 40px);
+
+    /* ③ 白い縁と黒背景を“やさしい面”に置き換え */
+    border:2px solid var(--panel-bd);
+    border-radius:18px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(2px) saturate(105%);
+
+    /* ④ 文字を“温白”に、強い輪郭線は弱める */
+    color: var(--text-warm);
+    text-shadow:
+      0 1px 0 rgba(0,0,0,.35),
+      0 6px 18px rgba(0,0,0,.30);
+    -webkit-text-stroke: .5px rgba(0,0,0,.15);
+
+    font-family:'Kosugi Maru','M PLUS 1',sans-serif;
+    font-weight:700; line-height:1.55;
+    font-size:clamp(22px, 5.2vw, 44px);
+
+    opacity:0; pointer-events:none;
+    transition:opacity .6s ease, transform .6s ease;
+    z-index:2;
+  }
+  .msg-box.is-show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+  .fade-layer{
+    position:fixed; inset:0;
+    /* ⑤ 真っ白→アイボリー。まぶしさ軽減 */
+    background: var(--ivory);
+    opacity:0; pointer-events:none; transition:opacity .8s ease;
+    z-index:3;
+    &.is-show{ opacity:1; }
+  }
+}
+
+
+
+
+
+//                            //
 //      index.html            //
 //      header                //
 //                            //
@@ -1501,9 +1583,9 @@ span {
 
         .click-btn {
           flex: 0 0 auto;
-          width: 400px; 
+          width: 400px;
           max-width: 400px;
-          margin: 0; 
+          margin: 0;
           padding: 14px 18px;
           line-height: 1.2;
           box-sizing: border-box;
@@ -1573,7 +1655,7 @@ span {
     display: grid;
     .parents-title {
       font-size: 1.5rem;
-      margin-bottom:20px;
+      margin-bottom: 20px;
 
       @include sp {
         font-size: 1.25rem;
@@ -1676,8 +1758,8 @@ span {
       padding-left: 2%;
       margin-top: 50px;
 
-      @include tab-sp{
-        margin-top:0;
+      @include tab-sp {
+        margin-top: 0;
       }
 
       @include sp {
@@ -1698,8 +1780,8 @@ span {
   border-radius: 20px;
   padding: 50px;
 
-  @include tab-sp{
-    margin-bottom:30px;
+  @include tab-sp {
+    margin-bottom: 30px;
   }
 
   @include sp {
@@ -1769,8 +1851,8 @@ span {
         border-radius: 8px;
         margin-top: 80px;
 
-        @include sp{
-          margin-top:0;
+        @include sp {
+          margin-top: 0;
         }
       }
     }
@@ -1796,8 +1878,8 @@ footer {
   padding-bottom: 30px;
   gap: 30px;
 
-  @include tab-sp{
-    gap:10px;
+  @include tab-sp {
+    gap: 10px;
   }
 
   .footer-logo {
