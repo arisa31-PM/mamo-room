@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>| ローディング |　めざせ！こうつうあんぜんキッズ</title>
+    <meta name="description" content="幼児〜小学生向け交通安全教材。道路標識やルールをクイズやイラストで楽しく学べる学習サイトです。">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+1:wght@400;700&family=Yomogi&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="loading-page">
+    <div class="video-wrap">
+        <video id="loadingVideo" autoplay muted playsinline webkit-playsinline preload="auto">
+            <source src="./video/loading.mp4" type="video/mp4">
+        </video>
+
+        <div class="msg-box" aria-hidden="true">
+            <p>
+                どうろは あぶないことが いっぱい！<br>
+                こうつうルールを まもって、じぶんの いのちを まもろう！
+            </p>
+        </div>
+
+        <div class="fade-layer" aria-hidden="true"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

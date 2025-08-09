@@ -1,38 +1,142 @@
+// main.js
 $(function () {
   const path = location.pathname;
 
   // ===============================
-  // index.html
+  // loading.html（loadingページのときだけ実行）
   // ===============================
-  // 効果音の再生
+  if ($('body').hasClass('loading-page')) {
+    const params = new URLSearchParams(location.search);
+    const isPreview = params.has('preview');        // ?preview=1 → 常に表示
+    const doReset   = params.has('reset');          // ?reset=1   → フラグ消す
+
+    var $video = $('#loadingVideo');
+    var $msg   = $('.msg-box');
+    var $fade  = $('.fade-layer');
+    var v = $video.get(0);
+
+    var NEXT_URL = 'index.html';
+    var SEEN_KEY = 'loading_seen_v2';
+
+    // オプション：reset指定でフラグ消去（検証用）
+    try {
+      if (doReset) {
+        localStorage.removeItem(SEEN_KEY);
+        sessionStorage.removeItem(SEEN_KEY);
+      }
+    } catch (e) {}
+
+    // 既に見ていればローディングは飛ばす（ただし preview 時は無効）
+    try {
+      if (!isPreview && (
+        sessionStorage.getItem(SEEN_KEY) === '1' ||
+        localStorage.getItem(SEEN_KEY)  === '1'
+      )) {
+        location.replace(NEXT_URL); // 履歴を作らない
+        return; // 他処理は走らせない
+      }
+    } catch (e) {}
+
+    var started = false;   // 5秒/10秒タイマーの二重起動防止
+    var showTimer = null;  // 5秒後メッセージ
+    var jumpTimer = null;  // 10秒後遷移
+    var forcedTimer = null;// 14秒フォールバック
+    var jumped = false;    // 二重遷移防止
+
+    function kick() {
+      if (started) return;
+      started = true;
+
+      // 5秒後：動画を薄く＆メッセージ表示
+      showTimer = setTimeout(function () {
+        $video.addClass('is-dim');
+        $msg.addClass('is-show');
+      }, 5000);
+
+      // さらに5秒後：index.htmlへ
+      jumpTimer = setTimeout(goNext, 10000);
+    }
+
+    function goNext() {
+      if (jumped) return;
+      jumped = true;
+
+      clearTimeout(showTimer);
+      clearTimeout(jumpTimer);
+      clearTimeout(forcedTimer);
+
+      // 二度目以降はスキップ
+      try {
+        sessionStorage.setItem(SEEN_KEY, '1');
+        localStorage.setItem(SEEN_KEY, '1');
+      } catch (e) {}
+
+      $fade.addClass('is-show');
+      setTimeout(function () {
+        location.replace(NEXT_URL); // 戻るでループしない
+      }, 800);
+    }
+
+    // 再生開始イベントで kick（どれか1回拾えればOK）
+    $video.on('playing play timeupdate loadedmetadata loadeddata canplay canplaythrough', kick);
+
+    // 再生不可でもタイマーは進める（真っ黒回避）
+    $video.on('error stalled abort suspend', function(){ kick(); });
+
+    // 自動再生キック（iOS/Android対策：muted + playsinline 前提）
+    function tryPlay() {
+      if (!v) { kick(); return; }
+      var p = v.play && v.play();
+      if (p && p.catch) p.catch(function(){ kick(); });
+    }
+    if (v) {
+      if (v.readyState >= 2) tryPlay(); else setTimeout(tryPlay, 200);
+      // 念のため 1秒後にも開始（イベント取りこぼし対策）
+      setTimeout(kick, 1000);
+    } else {
+      kick();
+    }
+
+    // タブ離脱時はタイマー停止
+    window.addEventListener('pagehide', function(){
+      clearTimeout(showTimer);
+      clearTimeout(jumpTimer);
+      clearTimeout(forcedTimer);
+    });
+
+    // 何かあっても 14 秒で強制遷移
+    forcedTimer = setTimeout(goNext, 14000);
+
+    return; // ← loadingページはここで終わり。他のページ処理は動かさない
+  }
+
+  // ===============================
+  // index.html（トップ）
+  // ===============================
+  // BGM（存在すれば使う）
   const audioEl = document.getElementById("bgm");
   const audio = audioEl ? audioEl : new Audio();
 
-  // ========= クイズ開始 =========
+  // クイズ開始
   if (path.includes("index.html") || path === "/" || path === "/index.html") {
     $("#quiz .click-btn").on("click", function (e) {
       e.preventDefault();
 
-      // クイズ順序を作成
-      const quizOrder = [...Array(10).keys()].map((i) => i + 1).sort(() => Math.random() - 0.5);
+      const quizOrder = [...Array(10).keys()].map(i => i + 1).sort(() => Math.random() - 0.5);
       localStorage.setItem("quizOrder", JSON.stringify(quizOrder));
       localStorage.setItem("currentQuizIndex", "0");
       localStorage.setItem("playPrologue", "true");
 
-      // BGM再生
       try { audio.volume = 0.3; } catch {}
       Promise.resolve(audio.play())
-        .catch(() => {}) 
+        .catch(() => {})
         .finally(() => {
-
           setTimeout(() => { window.location.href = "start.html"; }, 600);
         });
     });
   }
 
-  // ===============================
   // メインビジュアル・スライダー
-  // ===============================
   const slides = $(".mainvisual-slider img");
   let current = 0;
   function showNextSlide() {
@@ -43,9 +147,7 @@ $(function () {
   }
   if (slides.length) setInterval(showNextSlide, 3000);
 
-  // ===============================
   // スクロールでフェードイン
-  // ===============================
   function fadeInOnScroll() {
     $(".fadein, .fadein-up").each(function () {
       const $el = $(this);
@@ -58,25 +160,19 @@ $(function () {
   $(window).on("scroll", fadeInOnScroll);
   fadeInOnScroll();
 
-  // ===============================
   // とびまるジャンプ
-  // ===============================
   $(".mascot").on("mouseenter", function () {
     const $this = $(this);
     $this.removeClass("jump").addClass("jump");
     setTimeout(() => $this.removeClass("jump"), 800);
   });
 
-  // ===============================
   // タイトルのアニメーション
-  // ===============================
   setTimeout(() => $(".tobimaru-title").addClass("active"), 0);
   setTimeout(() => $(".site-title").addClass("active"), 1000);
   setTimeout(() => $(".speech-bubble").addClass("active"), 2000);
 
-  // ===============================
   // カーソル追従（とびまる）
-  // ===============================
   const $tobimaru = $("#tobimaru-cursor");
   $(document).on("mousemove", function (e) {
     if (!$tobimaru.length) return;
@@ -84,21 +180,20 @@ $(function () {
   });
 
   // ===============================
-  // ハンバーガーメニュー
+  // ハンバーガーメニュー（背景スクロール固定・アンカー正確スクロール）
   // ===============================
   const $hamburger = $("#hamburgerMenu");
-  const $menuPanel  = $("#menuPanel");
-  const $overlay    = $("#overlay");
-  const $redLight   = $(".light.red");
-  const $greenLight = $(".light.green");
-  const $body       = $("body");
+  const $menuPanel = $("#menuPanel");
+  const $overlay   = $("#overlay");
+  const $redLight  = $(".light.red");
+  const $greenLight= $(".light.green");
+  const $body      = $("body");
 
   if ($hamburger.length) {
     // 初期ライト色
     $redLight.css("fill", "#f44336");
     $greenLight.css("fill", "#ccc");
 
-    // 背景固定用
     let savedScrollY = null;
 
     function openMenu() {
@@ -130,7 +225,7 @@ $(function () {
     // オーバーレイで閉じる
     $overlay.on("click", closeMenu);
 
-    // パネル内クリック
+    // パネル内クリック（li 直押しでも a を拾う）
     $menuPanel.on("click", "li, a", function (e) {
       const $a = $(e.target).closest("a");
       if (!$a.length) return;
@@ -142,10 +237,12 @@ $(function () {
 
         e.preventDefault();
 
+        // 目的地は閉じる前に計算
         const dest = $target.offset().top;
 
         closeMenu();
 
+        // レイアウト確定の次フレームでスクロール
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             try {
@@ -158,39 +255,38 @@ $(function () {
 
         savedScrollY = null;
       } else {
-        closeMenu();
+        closeMenu(); // 別ページ遷移はデフォルトのまま
       }
     });
 
+    // ESC で閉じる
     $(document).on("keydown", function (e) {
       if (e.key === "Escape" && $menuPanel.hasClass("open")) closeMenu();
     });
 
+    // ページ離脱時は閉じる（iOS戻る問題の保険）
     window.addEventListener("pagehide", () => closeMenu());
     window.addEventListener("beforeunload", () => closeMenu());
   }
 
   // ===============================
-  // start.html
+  // start.html（BGM再生・クイズ開始）
   // ===============================
-  // 効果音の再生
   if (location.pathname.includes("start.html")) {
     const $startQuiz = $("#startQuiz");
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // スマホ以外の端末ならBGMを再生
+    // スマホ以外はBGM自動再生
     if (!isMobile) {
       const prologue = document.getElementById("prologueSound");
       if (prologue) {
         prologue.volume = 0.3;
         prologue.loop = true;
-        setTimeout(() => {
-          prologue.play().catch(() => {});
-        }, 100);
+        setTimeout(() => { prologue.play().catch(() => {}); }, 100);
       }
     }
 
-    // クイズスタート時の処理（共通）
+    // スタート
     $startQuiz.on("click", function (e) {
       e.preventDefault();
       const prologue = document.getElementById("prologueSound");
@@ -199,9 +295,7 @@ $(function () {
         prologue.currentTime = 0;
       }
 
-      const quizOrder = [...Array(10).keys()]
-        .map((i) => i + 1)
-        .sort(() => Math.random() - 0.5);
+      const quizOrder = [...Array(10).keys()].map(i => i + 1).sort(() => Math.random() - 0.5);
       localStorage.setItem("quizOrder", JSON.stringify(quizOrder));
       localStorage.setItem("currentQuizIndex", "0");
 
@@ -293,29 +387,22 @@ $(function () {
       if (localStorage.getItem(`quiz${i}`) === "correct") correctCount++;
     }
     $("#score").text(correctCount);
-    const message =
-      correctCount === 10
-        ? "こうつうあんぜんマスターにんてい！"
-        : "10もんせいかいをめざしてがんばろう！";
+    const message = (correctCount === 10)
+      ? "こうつうあんぜんマスターにんてい！"
+      : "10もんせいかいをめざしてがんばろう！";
     $("#message").text(message);
 
     const allow = localStorage.getItem("allowAudio");
     if (allow === "true") {
-      const s = new Audio(
-        correctCount === 10 ? "sound/level-up.mp3" : "sound/sparkle.mp3"
-      );
+      const s = new Audio(correctCount === 10 ? "sound/level-up.mp3" : "sound/sparkle.mp3");
       s.volume = 1.0;
-      s.play().finally(() => {
-        localStorage.removeItem("allowAudio");
-      });
+      s.play().finally(() => { localStorage.removeItem("allowAudio"); });
     }
 
-    // もういちどちょうせん！ボタン
+    // もういちどちょうせん！
     $("#restartQuiz").on("click", function (e) {
       e.preventDefault();
-      const newOrder = [...Array(10).keys()]
-        .map((i) => i + 1)
-        .sort(() => Math.random() - 0.5);
+      const newOrder = [...Array(10).keys()].map(i => i + 1).sort(() => Math.random() - 0.5);
       localStorage.setItem("quizOrder", JSON.stringify(newOrder));
       localStorage.setItem("currentQuizIndex", "0");
       window.location.href = `quiz${newOrder[0]}.html`;
