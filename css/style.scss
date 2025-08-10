@@ -426,7 +426,7 @@ span {
 
     opacity:0; pointer-events:none;
     transition:opacity .6s ease, transform .6s ease;
-    z-index:2;
+    z-index:3;
   }
   .msg-box.is-show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
 
@@ -435,7 +435,7 @@ span {
     /* ⑤ 真っ白→アイボリー。まぶしさ軽減 */
     background: var(--ivory);
     opacity:0; pointer-events:none; transition:opacity .8s ease;
-    z-index:3;
+    z-index:2;
     &.is-show{ opacity:1; }
   }
 }
