@@ -349,38 +349,35 @@ span {
   }
 }
 .loading-page {
-  /* ① 色トークン（あとで微調整しやすい） */
-  --warm-tint: hsla(32, 70%, 72%, .28); /* 画面全体の暖色フィルター */
-  --ivory: hsl(42 100% 97%); /* 白フェードをアイボリーに */
-  --panel-bg: hsla(28, 35%, 12%, .55); /* メッセージ面の半透明ブラウン */
-  --panel-bd: hsla(38, 90%, 88%, .7); /* 白より柔らかいアイボリー枠線 */
-  --text-warm: hsl(45 100% 98%); /* 真っ白より少し温かい文字色 */
-  /* 少しだけ明るさを落とす */
+  --warm-tint: hsla(32, 70%, 72%, 0.28);
+  --ivory: hsl(42 100% 97%);
+  --panel-bg: hsla(28, 35%, 12%, 0.55);
+  --panel-bd: hsla(38, 90%, 88%, 0.7);
+  --text-warm: hsl(45 100% 98%);
 }
 .loading-page .video-wrap {
   position: fixed;
   inset: 0;
-  /* ② 画面全体に暖色フィルター＋わずかなビネット（優しい陰影） */
 }
 .loading-page .video-wrap::after {
   content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(120% 85% at 50% 70%, transparent 55%, rgba(0, 0, 0, 0.12) 85%), var(--warm-tint);
-  z-index: 1; /* video の上、msg-box の下 */
+  z-index: 1;
   pointer-events: none;
   transition: opacity 0.8s ease;
-  opacity: 1; /* まずは常時ON。強すぎる時は .85～.9 に */
+  opacity: 1;
 }
 .loading-page #loadingVideo {
-  position: absolute;
+  display: block;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
   -o-object-fit: cover;
      object-fit: cover;
   background: #000;
-  display: block;
   transition: opacity 0.8s ease;
   z-index: 1;
 }
@@ -388,47 +385,37 @@ span {
   opacity: 0.7;
 }
 .loading-page .msg-box {
-  position: absolute;
+  position: fixed;
+  bottom: 40px;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) scale(0.98);
+  transform: translateX(-50%);
   max-width: min(92vw, 900px);
-  box-sizing: border-box;
-  padding: clamp(16px, 4vw, 32px) clamp(20px, 5vw, 40px);
-  /* ③ 白い縁と黒背景を“やさしい面”に置き換え */
-  border: 2px solid var(--panel-bd);
-  border-radius: 18px;
-  background: var(--panel-bg);
-  -webkit-backdrop-filter: blur(2px) saturate(105%);
-          backdrop-filter: blur(2px) saturate(105%);
-  /* ④ 文字を“温白”に、強い輪郭線は弱める */
-  color: var(--text-warm);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.3);
-  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.15);
-  font-family: "Kosugi Maru", "M PLUS 1", sans-serif;
-  font-weight: 700;
-  line-height: 1.55;
-  font-size: clamp(22px, 5.2vw, 44px);
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #123;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s;
   z-index: 3;
+  pointer-events: none;
 }
-.loading-page .msg-box.is-show {
+.loading-page .msg-box.show {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+}
+.loading-page .msg-box[aria-hidden=true] {
+  display: block;
 }
 .loading-page .fade-layer {
   position: fixed;
   inset: 0;
-  /* ⑤ 真っ白→アイボリー。まぶしさ軽減 */
-  background: var(--ivory);
+  background: rgba(0, 0, 0, 0.35);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.8s ease;
   z-index: 2;
 }
-.loading-page .fade-layer.is-show {
+.loading-page .fade-layer.show {
   opacity: 1;
 }
 
