@@ -411,17 +411,21 @@ span {
     }
   }
 
+.loading-page {
   .msg-box {
     position: fixed;
-    bottom: 40px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    max-width: min(92vw, 900px);
-    padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.92);
-    color: #123;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    max-width: min(92vw, 1000px);
+    padding: 24px 32px;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.6;
+    border-radius: 16px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    text-align: center;
     opacity: 0;
     transition: opacity 0.6s;
     z-index: 3;
@@ -430,11 +434,9 @@ span {
     &.show {
       opacity: 1;
     }
-
-    &[aria-hidden="true"] {
-      display: block;
-    }
   }
+}
+
 
   .fade-layer {
     position: fixed;
