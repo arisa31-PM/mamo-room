@@ -32,9 +32,9 @@ $(function () {
     } catch (e) {}
 
     // ==== 時間設定 ====
-    const MSG_AT_MS = 2200;
-    const SECOND_MSG_DELAY = 2200;
-    const STAY_AFTER_SECOND_MS = 2000;
+    const MSG_AT_MS = 5000;
+    const SECOND_MSG_DELAY = 2000;
+    const STAY_AFTER_SECOND_MS = 5000;
 
     let started = false;
 
