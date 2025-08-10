@@ -416,10 +416,15 @@ span {
 }
 @media screen and (max-width: 1024px) {
   .loading-page .msg-box {
-    top: 5%;
-    transform: translateX(-50%);
+    top: 10%;
     width: 100%;
+    transform: translateX(-50%);
     border-radius: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .loading-page .msg-box {
+    top: 5%;
   }
 }
 .loading-page .msg-box.show {
@@ -455,7 +460,7 @@ span {
   -webkit-animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
           animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
 }
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 767px) {
   .loading-page .msg-box.variant-excite {
     font-size: 1.5rem;
   }
