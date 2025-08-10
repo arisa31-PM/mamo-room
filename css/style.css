@@ -359,6 +359,11 @@ span {
   position: fixed;
   inset: 0;
 }
+@media screen and (max-width: 1024px) {
+  .loading-page .video-wrap {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+}
 .loading-page .video-wrap::after {
   content: "";
   position: absolute;
@@ -380,6 +385,12 @@ span {
   background: #000;
   transition: opacity 0.8s ease;
   z-index: 1;
+}
+@media screen and (max-width: 1024px) {
+  .loading-page #loadingVideo {
+    -o-object-fit: contain;
+       object-fit: contain;
+  }
 }
 .loading-page #loadingVideo.is-dim {
   opacity: 0.7;
