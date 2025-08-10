@@ -440,10 +440,15 @@ span {
     pointer-events: none;
 
     @include tab-sp{
-      top:5%;
-      transform:translateX(-50%);
+      top:10%;
       width:100%;
+      transform:translateX(-50%);
       border-radius: 0;
+    }
+
+
+    @include sp{
+      top:5%;
     }
 
     &.show {
@@ -479,7 +484,7 @@ span {
       text-wrap: balance;
       animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
 
-      @include tab-sp{
+      @include sp{
         font-size: 1.5rem;
       }
 
