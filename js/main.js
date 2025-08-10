@@ -5,88 +5,90 @@ $(function () {
   // ===============================
   // loading.html（loadingページのときだけ実行）
   // ===============================
-  if ($("body").hasClass("loading-page")) {
-    const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
-    const NEXT_URL = BASE_DIR + "index.html";
-    const SEEN_KEY = "loading_seen_v3";
+if ($("body").hasClass("loading-page")) {
+  const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
+  const NEXT_URL = BASE_DIR + "index.html";
+  const SEEN_KEY = "loading_seen_v3";
 
-    const $video = $("#loadingVideo"),
-      v = $video.get(0);
-    const $msg = $(".msg-box");
-    const $fade = $(".fade-layer");
+  const $video = $("#loadingVideo"), v = $video.get(0);
+  const $msg   = $(".msg-box");
+  const $fade  = $(".fade-layer");
 
-    // ?show=1 / ?preview=1 で強制表示（既視認スキップ無効）
-    const q = new URLSearchParams(location.search);
-    const FORCE_SHOW =
-      q.has("show") ||
-      q.get("show") === "1" ||
-      q.has("preview") ||
-      q.get("preview") === "1";
+  // ?show=1 / ?preview=1 で強制表示（既視認スキップ無効）
+  const q = new URLSearchParams(location.search);
+  const FORCE_SHOW =
+    q.has("show") || q.get("show") === "1" ||
+    q.has("preview") || q.get("preview") === "1";
 
+  try {
+    const seen =
+      sessionStorage.getItem(SEEN_KEY) === "1" ||
+      localStorage.getItem(SEEN_KEY) === "1";
+    if (seen && !FORCE_SHOW) {
+      location.replace(NEXT_URL);
+      return;
+    }
+  } catch {}
+
+  // ==== 時間設定（調整OK） ====
+  const MSG_AT_MS            = 3000; // 1つ目の警告文を出すまで
+  const SECOND_MSG_DELAY     = 2000; // 1つ目→2つ目までの間
+  const STAY_AFTER_SECOND_MS = 2200; // 2つ目表示後に滞在
+
+  // ==== 状態 ====
+  let started = false;
+
+  // ==== 遷移 ====
+  function goNext() {
+    $fade.addClass("show");
     try {
-      const seen =
-        sessionStorage.getItem(SEEN_KEY) === "1" ||
-        localStorage.getItem(SEEN_KEY) === "1";
-      if (seen && !FORCE_SHOW) {
-        location.replace(NEXT_URL);
-        return;
-      }
+      sessionStorage.setItem(SEEN_KEY, "1");
+      localStorage.setItem(SEEN_KEY, "1");
     } catch {}
-
-    const MSG_AT_MS = 3000; 
-    const STAY_AFTER_MSG_MS = 2200;
-
-    let started = false,
-      showTimer = null,
-      forceTimer = null,
-      msgShownAt = 0;
-
-    function startSeq() {
-      if (started) return;
-      started = true;
-      showTimer = setTimeout(() => {
-        $msg.attr("aria-hidden", "false").addClass("show");
-        msgShownAt = Date.now();
-      }, MSG_AT_MS);
-      forceTimer = setTimeout(goNext, 10000); // 長くても10秒で遷移
-    }
-    function goNext() {
-      clearTimeout(showTimer);
-      clearTimeout(forceTimer);
-      $fade.addClass("show");
-      try {
-        sessionStorage.setItem(SEEN_KEY, "1");
-        localStorage.setItem(SEEN_KEY, "1");
-      } catch {}
-      setTimeout(() => {
-        location.replace(NEXT_URL);
-      }, 300);
-    }
-
-    $video.on("canplaythrough", () => {
-      v.play().catch(() => {});
-      startSeq();
-    });
-    $video.on("error", startSeq);
-
-    // 動画終了時も、必ずテキストを見せてから遷移
-    $video.on("ended", () => {
-      startSeq();
-      if (!msgShownAt) {
-        clearTimeout(showTimer);
-        $msg.attr("aria-hidden", "false").addClass("show");
-        msgShownAt = Date.now();
-      }
-      const wait = Math.max(0, msgShownAt + STAY_AFTER_MSG_MS - Date.now());
-      setTimeout(goNext, wait);
-    });
-
-    setTimeout(startSeq, 3000); // 読み込み遅延の保険
-    $("#skipLoading").on("click", (e) => {
-      e.preventDefault();
-      goNext();
-    });
+    setTimeout(() => { location.replace(NEXT_URL); }, 300);
   }
+
+  // ==== シーケンス ====
+  function startSeq() {
+    if (started) return;
+    started = true;
+
+    // ① 警告メッセージ
+    setTimeout(() => {
+      $msg
+        .removeClass("variant-excite")
+        .html(
+          '<span class="red">どうろ</span>は <span class="red">あぶない</span>ことが いっぱい！<br>こうつうルールを まもって、じぶんの <span class="red">いのち</span>を まもろう！'
+        )
+        .attr("aria-hidden", "false")
+        .addClass("show");
+
+      // ② ワクワクメッセージへ差し替え
+      setTimeout(() => {
+        // きらめき演出を入れたい場合はここで効果音など再生してOK
+        $msg
+          .addClass("variant-excite")
+          .html("さあ、いっしょにべんきょうしよう！");
+
+        // ③ 少し滞在してから遷移
+        setTimeout(goNext, STAY_AFTER_SECOND_MS);
+      }, SECOND_MSG_DELAY);
+    }, MSG_AT_MS);
+  }
+
+  // ==== トリガ ====
+  $video.on("canplaythrough", () => { v.play().catch(() => {}); startSeq(); });
+  $video.on("error", startSeq);
+
+  // 動画がすぐ終わっても2段階表示は必ず行う
+  $video.on("ended", () => { startSeq(); });
+
+  // 読み込みが遅い時の保険
+  setTimeout(startSeq, 3000);
+
+  // 任意のスキップボタンがある場合
+  $("#skipLoading").on("click", (e) => { e.preventDefault(); goNext(); });
+}
 
   // ===============================
   // index.html（トップ）
