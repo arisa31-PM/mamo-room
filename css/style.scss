@@ -450,10 +450,11 @@ span {
       left: auto !important;
       transform: none !important;
       margin: 0 !important;
-      width: 100vw !important;
+      max-width: 100%;
+      width: 100% !important;
       max-width: none !important;
       height: 100vh !important;
-      padding: 0 6vw !important;
+      padding: 0 10px !important;
       border-radius: 0 !important;
       box-shadow: none !important;
       display: flex;
