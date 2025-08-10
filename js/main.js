@@ -4,13 +4,17 @@ $(function () {
   // ===============================
   // loading.html
   // ===============================
-  if ($("body").hasClass("loading-page")) {
+  $(function () {
+    if (!$("body").hasClass("loading-page")) return;
+
+    // ===== 基本設定 =====
     const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
     const NEXT_URL = BASE_DIR + "index.html";
     const SEEN_KEY = "loading_seen_v3";
 
-    const $video = $("#loadingVideo"),
-      v = $video.get(0);
+    const $body = $("body");
+    const $video = $("#loadingVideo");
+    const v = $video.get(0);
     const $msg = $(".msg-box");
     const $fade = $(".fade-layer");
 
@@ -21,6 +25,9 @@ $(function () {
       q.has("preview") ||
       q.get("preview") === "1";
 
+    if (q.get("fit") === "contain") $body.addClass("fit-contain");
+
+    // 既視認ならスキップ
     try {
       const seen =
         sessionStorage.getItem(SEEN_KEY) === "1" ||
@@ -31,13 +38,27 @@ $(function () {
       }
     } catch (e) {}
 
-    // ==== 時間設定 ====
+    // ===== 時間設定（要望どおり）=====
     const MSG_AT_MS = 7000;
     const SECOND_MSG_DELAY = 5000;
-    const STAY_AFTER_SECOND_MS = 7000;
+    const STAY_AFTER_SECOND_MS = 5000;
 
     let started = false;
 
+    // ===== レスポンシブ=====
+    function applyResponsiveFit() {
+      if (!v || !v.videoWidth || !v.videoHeight) return;
+      const videoAR = v.videoWidth / v.videoHeight;
+      const winAR = window.innerWidth / window.innerHeight;
+      const NEED_CONTAIN = winAR < videoAR * 0.95 || winAR > videoAR * 1.05;
+      $body.toggleClass("fit-contain", NEED_CONTAIN);
+    }
+    if (v) {
+      v.addEventListener("loadedmetadata", applyResponsiveFit);
+      window.addEventListener("resize", applyResponsiveFit);
+    }
+
+    // ===== 遷移 =====
     function goNext() {
       try {
         sessionStorage.setItem(SEEN_KEY, "1");
@@ -46,6 +67,7 @@ $(function () {
       location.replace(NEXT_URL);
     }
 
+    // ===== シーケンス =====
     function startSeq() {
       if (started) return;
       started = true;
@@ -63,20 +85,21 @@ $(function () {
           $msg
             .addClass("variant-excite")
             .html("さあ、いっしょにべんきょうしよう！");
-          if (v) v.classList.add("is-dim"); 
+          if (v) v.classList.add("is-dim");
           $fade.addClass("dim");
 
           setTimeout(() => {
-            $fade.removeClass("dim").addClass("show"); 
+            $fade.removeClass("dim").addClass("show");
             try {
               v.pause();
             } catch (e) {}
-            setTimeout(goNext, 350); 
+            setTimeout(goNext, 350);
           }, STAY_AFTER_SECOND_MS);
         }, SECOND_MSG_DELAY);
       }, MSG_AT_MS);
     }
 
+    // ===== トリガ　=====
     if (v) v.addEventListener("playing", startSeq);
     $video.on("canplaythrough", () => {
       if (v) v.play().catch(() => {});
@@ -84,7 +107,7 @@ $(function () {
     });
     $video.on("error", startSeq);
     setTimeout(startSeq, 3000);
-  }
+  });
 
   // ===============================
   // index.html（トップ）
