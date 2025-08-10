@@ -4,80 +4,87 @@ $(function () {
   // ===============================
   // loading.html
   // ===============================
-if ($("body").hasClass("loading-page")) {
-  const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
-  const NEXT_URL = BASE_DIR + "index.html";
-  const SEEN_KEY = "loading_seen_v3";
+  if ($("body").hasClass("loading-page")) {
+    const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
+    const NEXT_URL = BASE_DIR + "index.html";
+    const SEEN_KEY = "loading_seen_v3";
 
-  const $video = $("#loadingVideo"), v = $video.get(0);
-  const $msg   = $(".msg-box");
-  const $fade  = $(".fade-layer");
+    const $video = $("#loadingVideo"),
+      v = $video.get(0);
+    const $msg = $(".msg-box");
+    const $fade = $(".fade-layer");
 
-  const q = new URLSearchParams(location.search);
-  const FORCE_SHOW =
-    q.has("show") || q.get("show") === "1" ||
-    q.has("preview") || q.get("preview") === "1";
+    const q = new URLSearchParams(location.search);
+    const FORCE_SHOW =
+      q.has("show") ||
+      q.get("show") === "1" ||
+      q.has("preview") ||
+      q.get("preview") === "1";
 
-  try {
-    const seen =
-      sessionStorage.getItem(SEEN_KEY) === "1" ||
-      localStorage.getItem(SEEN_KEY) === "1";
-    if (seen && !FORCE_SHOW) {
-      location.replace(NEXT_URL);
-      return;
-    }
-  } catch (e) {}
-
-  // ==== 時間設定 ====
-  const MSG_AT_MS            = 2200;
-  const SECOND_MSG_DELAY     = 2200;
-  const STAY_AFTER_SECOND_MS = 2000;
-  const FADE_OUT_MS          = 1500;
-
-  let started = false;
-
-  function goNext() {
-    $fade.addClass("dim").addClass("show");
     try {
-      sessionStorage.setItem(SEEN_KEY, "1");
-      localStorage.setItem(SEEN_KEY, "1");
+      const seen =
+        sessionStorage.getItem(SEEN_KEY) === "1" ||
+        localStorage.getItem(SEEN_KEY) === "1";
+      if (seen && !FORCE_SHOW) {
+        location.replace(NEXT_URL);
+        return;
+      }
     } catch (e) {}
-    setTimeout(() => { location.replace(NEXT_URL); }, 300);
-  }
 
-  function startSeq() {
-    if (started) return;
-    started = true;
+    // ==== 時間設定 ====
+    const MSG_AT_MS = 2200;
+    const SECOND_MSG_DELAY = 2200;
+    const STAY_AFTER_SECOND_MS = 2000;
 
-    setTimeout(() => {
-      $msg
-        .removeClass("variant-excite fade-out")
-        .html(
-          '<span class="red">どうろ</span>は <span class="red">あぶない</span>ことが いっぱい！<br>こうつうルールを まもって、じぶんの <span class="red">いのち</span>を まもろう！'
-        )
-        .attr("aria-hidden", "false")
-        .addClass("show");
+    let started = false;
+
+    function goNext() {
+      try {
+        sessionStorage.setItem(SEEN_KEY, "1");
+        localStorage.setItem(SEEN_KEY, "1");
+      } catch (e) {}
+      location.replace(NEXT_URL);
+    }
+
+    function startSeq() {
+      if (started) return;
+      started = true;
 
       setTimeout(() => {
-        $msg.addClass("variant-excite").html("さあ、いっしょにべんきょうしよう！");
-        if (v) v.classList.add("is-dim"); 
-        $fade.addClass("dim");
+        $msg
+          .removeClass("variant-excite fade-out")
+          .html(
+            '<span class="red">どうろ</span>は <span class="red">あぶない</span>ことが いっぱい！<br>こうつうルールを まもって、じぶんの <span class="red">いのち</span>を まもろう！'
+          )
+          .attr("aria-hidden", "false")
+          .addClass("show");
 
         setTimeout(() => {
-          $msg.addClass("fade-out");
-          setTimeout(goNext, FADE_OUT_MS);
-        }, STAY_AFTER_SECOND_MS);
-      }, SECOND_MSG_DELAY);
-    }, MSG_AT_MS);
+          $msg
+            .addClass("variant-excite")
+            .html("さあ、いっしょにべんきょうしよう！");
+          if (v) v.classList.add("is-dim"); 
+          $fade.addClass("dim");
+
+          setTimeout(() => {
+            $fade.removeClass("dim").addClass("show"); 
+            try {
+              v.pause();
+            } catch (e) {}
+            setTimeout(goNext, 350); 
+          }, STAY_AFTER_SECOND_MS);
+        }, SECOND_MSG_DELAY);
+      }, MSG_AT_MS);
+    }
+
+    if (v) v.addEventListener("playing", startSeq);
+    $video.on("canplaythrough", () => {
+      if (v) v.play().catch(() => {});
+      startSeq();
+    });
+    $video.on("error", startSeq);
+    setTimeout(startSeq, 3000);
   }
-
-  if (v) v.addEventListener("playing", startSeq);
-  $video.on("canplaythrough", () => { if (v) v.play().catch(() => {}); startSeq(); });
-  $video.on("error", startSeq);
-  setTimeout(startSeq, 3000);
-
-}
-
 
   // ===============================
   // index.html（トップ）
