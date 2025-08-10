@@ -439,6 +439,13 @@ span {
     z-index: 3;
     pointer-events: none;
 
+    @include tab-sp{
+      top:0;
+      transform:translateX(-50%);
+      width:100%;
+      border-radius: 0;
+    }
+
     &.show {
       opacity: 1;
     }
