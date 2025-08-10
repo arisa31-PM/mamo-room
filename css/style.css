@@ -384,7 +384,7 @@ span {
 .loading-page #loadingVideo.is-dim {
   opacity: 0.7;
 }
-.loading-page .loading-page .msg-box {
+.loading-page .msg-box {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -403,10 +403,10 @@ span {
   z-index: 3;
   pointer-events: none;
 }
-.loading-page .loading-page .msg-box.show {
+.loading-page .msg-box.show {
   opacity: 1;
 }
-.loading-page .loading-page .msg-box .variant-excite {
+.loading-page .msg-box .variant-excite {
   background: linear-gradient(135deg, #fff6d9, #ffe69a 35%, #ffd166 100%);
   color: #222;
   border-radius: 18px;
@@ -422,7 +422,7 @@ span {
   outline: 3px solid rgba(255, 255, 255, 0.7);
   outline-offset: 2px;
 }
-.loading-page .loading-page .msg-box .variant-excite::before {
+.loading-page .msg-box .variant-excite::before {
   content: "✨";
   margin-right: 0.35em;
 }
