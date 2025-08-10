@@ -16,7 +16,7 @@ if ($('body').hasClass('loading-page')) {
   const $fade  = $('.fade-layer');
   const v = $video.get(0);
 
-  // ★ クエリパラメータで強制表示（?preview=1 または ?show=1）
+  // ★ クエリパラメータで強制表示
   const q = new URLSearchParams(location.search);
   const FORCE_SHOW =
     q.has('preview') || q.get('preview') === '1' ||
