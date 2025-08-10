@@ -1,9 +1,8 @@
 $(function () {
-  // どのページでも使う
   const path = location.pathname;
 
   // ===============================
-  // loading.html（loadingページのときだけ実行）
+  // loading.html
   // ===============================
 if ($("body").hasClass("loading-page")) {
   const BASE_DIR = location.pathname.replace(/[^/]*$/, "");
@@ -14,7 +13,6 @@ if ($("body").hasClass("loading-page")) {
   const $msg   = $(".msg-box");
   const $fade  = $(".fade-layer");
 
-  // ?show=1 / ?preview=1 で強制表示（既視認スキップ無効）
   const q = new URLSearchParams(location.search);
   const FORCE_SHOW =
     q.has("show") || q.get("show") === "1" ||
@@ -28,67 +26,58 @@ if ($("body").hasClass("loading-page")) {
       location.replace(NEXT_URL);
       return;
     }
-  } catch {}
+  } catch (e) {}
 
-  // ==== 時間設定（調整OK） ====
-  const MSG_AT_MS            = 3000; // 1つ目の警告文を出すまで
-  const SECOND_MSG_DELAY     = 2000; // 1つ目→2つ目までの間
-  const STAY_AFTER_SECOND_MS = 2200; // 2つ目表示後に滞在
+  // ==== 時間設定 ====
+  const MSG_AT_MS            = 2200;
+  const SECOND_MSG_DELAY     = 2200;
+  const STAY_AFTER_SECOND_MS = 2000;
+  const FADE_OUT_MS          = 1500;
 
-  // ==== 状態 ====
   let started = false;
 
-  // ==== 遷移 ====
   function goNext() {
-    $fade.addClass("show");
+    $fade.addClass("dim").addClass("show");
     try {
       sessionStorage.setItem(SEEN_KEY, "1");
       localStorage.setItem(SEEN_KEY, "1");
-    } catch {}
+    } catch (e) {}
     setTimeout(() => { location.replace(NEXT_URL); }, 300);
   }
 
-  // ==== シーケンス ====
   function startSeq() {
     if (started) return;
     started = true;
 
-    // ① 警告メッセージ
     setTimeout(() => {
       $msg
-        .removeClass("variant-excite")
+        .removeClass("variant-excite fade-out")
         .html(
           '<span class="red">どうろ</span>は <span class="red">あぶない</span>ことが いっぱい！<br>こうつうルールを まもって、じぶんの <span class="red">いのち</span>を まもろう！'
         )
         .attr("aria-hidden", "false")
         .addClass("show");
 
-      // ② ワクワクメッセージへ差し替え
       setTimeout(() => {
-        // きらめき演出を入れたい場合はここで効果音など再生してOK
-        $msg
-          .addClass("variant-excite")
-          .html("さあ、いっしょにべんきょうしよう！");
+        $msg.addClass("variant-excite").html("さあ、いっしょにべんきょうしよう！");
+        if (v) v.classList.add("is-dim"); 
+        $fade.addClass("dim");
 
-        // ③ 少し滞在してから遷移
-        setTimeout(goNext, STAY_AFTER_SECOND_MS);
+        setTimeout(() => {
+          $msg.addClass("fade-out");
+          setTimeout(goNext, FADE_OUT_MS);
+        }, STAY_AFTER_SECOND_MS);
       }, SECOND_MSG_DELAY);
     }, MSG_AT_MS);
   }
 
-  // ==== トリガ ====
-  $video.on("canplaythrough", () => { v.play().catch(() => {}); startSeq(); });
+  if (v) v.addEventListener("playing", startSeq);
+  $video.on("canplaythrough", () => { if (v) v.play().catch(() => {}); startSeq(); });
   $video.on("error", startSeq);
-
-  // 動画がすぐ終わっても2段階表示は必ず行う
-  $video.on("ended", () => { startSeq(); });
-
-  // 読み込みが遅い時の保険
   setTimeout(startSeq, 3000);
 
-  // 任意のスキップボタンがある場合
-  $("#skipLoading").on("click", (e) => { e.preventDefault(); goNext(); });
 }
+
 
   // ===============================
   // index.html（トップ）
