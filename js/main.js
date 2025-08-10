@@ -6,9 +6,8 @@ $(function () {
   // loading.html（loadingページのときだけ実行）
   // ===============================
 if ($('body').hasClass('loading-page')) {
-  const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); 
+  const BASE_DIR = location.pathname.replace(/[^/]*$/, '');
   const NEXT_URL = BASE_DIR + 'index.html';
-
   const SEEN_KEY = 'loading_seen_v3';
 
   const $video = $('#loadingVideo');
@@ -16,61 +15,86 @@ if ($('body').hasClass('loading-page')) {
   const $fade  = $('.fade-layer');
   const v = $video.get(0);
 
-  // ★ クエリパラメータで強制表示
+  // 任意: ?show=1 / ?preview=1 で強制表示
   const q = new URLSearchParams(location.search);
   const FORCE_SHOW =
-    q.has('preview') || q.get('preview') === '1' ||
-    q.has('show')    || q.get('show') === '1';
+    q.has('show') || q.get('show') === '1' ||
+    q.has('preview') || q.get('preview') === '1';
 
+  // 既視認スキップ（強制表示のときは無効）
   try {
     const hasSeen =
       sessionStorage.getItem(SEEN_KEY) === '1' ||
-      localStorage.getItem(SEEN_KEY) === '1';
-
-    // ★ 強制表示でない かつ 既視認なら即スキップ
+      localStorage.getItem(SEEN_KEY)  === '1';
     if (hasSeen && !FORCE_SHOW) {
       location.replace(NEXT_URL);
       return;
     }
-  } catch (e) {
-    console.warn('storage unavailable:', e);
-  }
+  } catch {}
+
+  // ------ ここがポイント ------
+  const MSG_AT_MS = 3000;            // 何秒後にメッセージを出すか（← 3秒に短縮）
+  const STAY_AFTER_MSG_MS = 1800;    // メッセージを出してから最低この時間は滞在
+  // -----------------------------
 
   let started = false;
-  let showTimer = null; // 5秒後にメッセージ表示
-  let jumpTimer = null; // 10秒後に強制遷移
+  let showTimer = null;
+  let forceJumpTimer = null;
+  let seqStartAt = 0;
+  let msgShownAt = 0;
 
   function startSequence() {
     if (started) return;
     started = true;
+    seqStartAt = Date.now();
 
+    // メッセージ表示
     showTimer = setTimeout(() => {
       $msg.attr('aria-hidden', 'false').addClass('show');
-    }, 5000);
+      msgShownAt = Date.now();
+    }, MSG_AT_MS);
 
-    jumpTimer = setTimeout(goNext, 10000);
+    // 絶対に抜けるフォールバック（長くても10秒）
+    forceJumpTimer = setTimeout(goNext, 10000);
   }
 
   function goNext() {
     clearTimeout(showTimer);
-    clearTimeout(jumpTimer);
+    clearTimeout(forceJumpTimer);
     $fade.addClass('show');
-
     try {
       sessionStorage.setItem(SEEN_KEY, '1');
-      localStorage.setItem(SEEN_KEY, '1');
-    } catch (e) {}
-
+      localStorage.setItem(SEEN_KEY,  '1');
+    } catch {}
     setTimeout(() => { location.replace(NEXT_URL); }, 300);
   }
 
+  // 動画が読めたら開始（読めなくても開始）
   $video.on('canplaythrough', () => { v.play().catch(() => {}); startSequence(); });
-  $video.on('error', () => { console.warn('video error, fallback start'); startSequence(); });
-  $video.on('ended', goNext);
+  $video.on('error', startSequence);
 
+  // ★ 動画が先に終わっても「メッセージを出してから一定時間」待って遷移
+  $video.on('ended', () => {
+    startSequence(); // 念のため
+    const now = Date.now();
+
+    // まだメッセージを出していなければ即表示
+    if (!msgShownAt) {
+      clearTimeout(showTimer);
+      $msg.attr('aria-hidden', 'false').addClass('show');
+      msgShownAt = now;
+    }
+
+    // メッセージ表示からの残り待機時間を計算
+    const wait = Math.max(0, (msgShownAt + STAY_AFTER_MSG_MS) - now);
+    setTimeout(goNext, wait);
+  });
+
+  // 読み込みが遅いときの保険
   setTimeout(startSequence, 3000);
 
-  $('#skipLoading').on('click', function (e) { e.preventDefault(); goNext(); });
+  // 任意のスキップボタン
+  $('#skipLoading').on('click', (e) => { e.preventDefault(); goNext(); });
 }
 
   // ===============================
