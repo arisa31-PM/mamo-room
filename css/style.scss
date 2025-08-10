@@ -435,16 +435,18 @@ span {
     }
 
     &.variant-excite {
-      position: fixed;
-      inset: 0;
-      top: auto;
-      left: auto;
-      transform: none;
-      margin: 0;
-      max-width: none;
-      padding: 0 6vw;
-      border-radius: 0;
-      box-shadow: none;
+      position: fixed !important;
+      inset: 0 !important;
+      top: auto !important;
+      left: auto !important;
+      transform: none !important;
+      margin: 0 !important;
+      width: 100vw !important;
+      max-width: none !important;
+      height: 100vh !important;
+      padding: 0 6vw !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -454,11 +456,15 @@ span {
       font-weight: 900;
       letter-spacing: 0.02em;
       text-shadow: 0 3px 0 rgba(255, 255, 255, 0.35);
-      font-size: clamp(2.6rem, 6vw, 4.6rem);
-      line-height: 1.25;
+      font-size: clamp(2.6rem, 6vw, 4.8rem);
+      line-height: 1.2;
       word-break: keep-all;
       text-wrap: balance;
       animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
+
+      > * {
+        margin: 0;
+      }
 
       &.fade-out {
         animation: fadeOutText 1.5s ease forwards;
