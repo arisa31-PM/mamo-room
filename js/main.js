@@ -5,71 +5,73 @@ $(function () {
   // ===============================
   // loading.html（loadingページのときだけ実行）
   // ===============================
-  if ($('body').hasClass('loading-page')) {
-    // GitHub Pagesでも安全に index.html を指す
-    const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); 
-    const NEXT_URL = BASE_DIR + 'index.html';
+if ($('body').hasClass('loading-page')) {
+  const BASE_DIR = location.pathname.replace(/[^/]*$/, ''); 
+  const NEXT_URL = BASE_DIR + 'index.html';
 
-    // 既視認スキップ用キー（バージョン付きで衝突回避）
-    const SEEN_KEY = 'loading_seen_v3';
+  const SEEN_KEY = 'loading_seen_v3';
 
-    // 要素
-    const $video = $('#loadingVideo');
-    const $msg   = $('.msg-box');
-    const $fade  = $('.fade-layer');
-    const v = $video.get(0);
+  const $video = $('#loadingVideo');
+  const $msg   = $('.msg-box');
+  const $fade  = $('.fade-layer');
+  const v = $video.get(0);
 
-    // 既視認なら履歴を汚さず即遷移
-    try {
-      if (sessionStorage.getItem(SEEN_KEY) === '1' || localStorage.getItem(SEEN_KEY) === '1') {
-        location.replace(NEXT_URL);
-      } else {
-        // シーケンス開始準備
-        let started = false;
-        let showTimer = null; // 5秒後にメッセージ表示
-        let jumpTimer = null; // 10秒後に強制遷移
+  // ★ クエリパラメータで強制表示
+  const q = new URLSearchParams(location.search);
+  const FORCE_SHOW =
+    q.has('preview') || q.get('preview') === '1' ||
+    q.has('show')    || q.get('show') === '1';
 
-        function startSequence() {
-          if (started) return;
-          started = true;
+  try {
+    const hasSeen =
+      sessionStorage.getItem(SEEN_KEY) === '1' ||
+      localStorage.getItem(SEEN_KEY) === '1';
 
-          showTimer = setTimeout(() => {
-            $msg.attr('aria-hidden', 'false').addClass('show');
-          }, 5000);
-
-          jumpTimer = setTimeout(goNext, 10000); // フォールバック
-        }
-
-        function goNext() {
-          clearTimeout(showTimer);
-          clearTimeout(jumpTimer);
-          $fade.addClass('show');
-
-          try {
-            sessionStorage.setItem(SEEN_KEY, '1');
-            localStorage.setItem(SEEN_KEY, '1');
-          } catch (e) {}
-
-          setTimeout(() => { location.replace(NEXT_URL); }, 300);
-        }
-
-        // 動画イベント
-        $video.on('canplaythrough', () => { v.play().catch(() => {}); startSequence(); });
-        $video.on('error', () => { console.warn('video error, fallback start'); startSequence(); });
-        $video.on('ended', goNext);
-
-        // 保険
-        setTimeout(startSequence, 3000);
-
-        // 手動スキップ（ボタンがある場合）
-        $('#skipLoading').on('click', function (e) { e.preventDefault(); goNext(); });
-      }
-    } catch (e) {
-      console.warn('storage unavailable:', e);
-      // storage不可でも最低限進める
-      setTimeout(() => { location.replace(NEXT_URL); }, 8000);
+    // ★ 強制表示でない かつ 既視認なら即スキップ
+    if (hasSeen && !FORCE_SHOW) {
+      location.replace(NEXT_URL);
+      return;
     }
+  } catch (e) {
+    console.warn('storage unavailable:', e);
   }
+
+  let started = false;
+  let showTimer = null; // 5秒後にメッセージ表示
+  let jumpTimer = null; // 10秒後に強制遷移
+
+  function startSequence() {
+    if (started) return;
+    started = true;
+
+    showTimer = setTimeout(() => {
+      $msg.attr('aria-hidden', 'false').addClass('show');
+    }, 5000);
+
+    jumpTimer = setTimeout(goNext, 10000);
+  }
+
+  function goNext() {
+    clearTimeout(showTimer);
+    clearTimeout(jumpTimer);
+    $fade.addClass('show');
+
+    try {
+      sessionStorage.setItem(SEEN_KEY, '1');
+      localStorage.setItem(SEEN_KEY, '1');
+    } catch (e) {}
+
+    setTimeout(() => { location.replace(NEXT_URL); }, 300);
+  }
+
+  $video.on('canplaythrough', () => { v.play().catch(() => {}); startSequence(); });
+  $video.on('error', () => { console.warn('video error, fallback start'); startSequence(); });
+  $video.on('ended', goNext);
+
+  setTimeout(startSequence, 3000);
+
+  $('#skipLoading').on('click', function (e) { e.preventDefault(); goNext(); });
+}
 
   // ===============================
   // index.html（トップ）
