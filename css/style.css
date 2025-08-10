@@ -402,39 +402,43 @@ span {
   transition: opacity 0.6s, all 0.6s ease;
   z-index: 3;
   pointer-events: none;
-  /* ２段階目専用の見せ方 */
 }
 .loading-page .msg-box.show {
   opacity: 1;
 }
 .loading-page .msg-box.variant-excite {
   position: fixed;
-  inset: 0; /* 全画面化 */
+  inset: 0;
+  top: auto;
+  left: auto;
+  transform: none;
+  margin: 0;
+  max-width: none;
+  padding: 0 6vw;
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   background: linear-gradient(135deg, #fff6d9, #ffe69a 35%, #ffd166 100%);
   color: #222;
-  font-size: clamp(2.5rem, 5vw, 4rem); /* 大きく */
   font-weight: 900;
   letter-spacing: 0.02em;
   text-shadow: 0 3px 0 rgba(255, 255, 255, 0.35);
-  box-shadow: none;
-  border-radius: 0;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  line-height: 1.25;
+  word-break: keep-all;
+  text-wrap: balance;
   -webkit-animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
           animation: pop-in 0.5s ease both, sparkle 1.6s ease-in-out 1s infinite;
-  outline: none;
-}
-.loading-page .msg-box.variant-excite::before {
-  content: "✨";
-  margin-right: 0.35em;
-  font-size: 1.2em;
 }
 .loading-page .msg-box.variant-excite.fade-out {
   -webkit-animation: fadeOutText 1.5s ease forwards;
           animation: fadeOutText 1.5s ease forwards;
 }
-.loading-page .fade-layer {
+
+.fade-layer {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
@@ -443,10 +447,10 @@ span {
   transition: opacity 0.8s ease;
   z-index: 2;
 }
-.loading-page .fade-layer.show {
+.fade-layer.show {
   opacity: 0.85;
 }
-.loading-page .fade-layer.dim {
+.fade-layer.dim {
   opacity: 0.55;
 }
 
